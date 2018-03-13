@@ -1,0 +1,800 @@
+Last login: Mon Jan  8 01:23:28 on ttys000
+lakshmikanths-MacBook-Pro:~ lakshmikanth$ cd Documents/truffle-poc/
+lakshmikanths-MacBook-Pro:truffle-poc lakshmikanth$ truffle console
+No network available. Use `truffle develop` or add network to truffle.js config.
+lakshmikanths-MacBook-Pro:truffle-poc lakshmikanth$ cat truffle.js 
+// Allows us to use ES6 in our migrations and tests.
+require('babel-register')
+var bip39 = require("bip39");
+var hdkey = require('ethereumjs-wallet/hdkey');
+var ProviderEngine = require("web3-provider-engine");
+var WalletSubprovider = require('web3-provider-engine/subproviders/wallet.js');
+var Web3Subprovider = require("web3-provider-engine/subproviders/web3.js");
+var Web3 = require("web3");
+
+// Get our mnemonic and create an hdwallet
+var mnemonic = "At the edge of our hope, at the end of our time, we have chosen not only to believe in ourselves, but in each other";
+var hdwallet = hdkey.fromMasterSeed(bip39.mnemonicToSeed(mnemonic));
+
+// Get the first account using the standard hd path.
+var wallet_hdpath = "m/44'/60'/0'/0/";
+var wallet = hdwallet.derivePath(wallet_hdpath + "0").getWallet();
+var address = "0x" + wallet.getAddress().toString("hex");
+
+var providerUrl = "https://ropsten.infura.io/c72adYaVKozBHnFEYqCy";
+var engine = new ProviderEngine();
+engine.addProvider(new WalletSubprovider(wallet, {}));
+engine.addProvider(new Web3Subprovider(new Web3.providers.HttpProvider(providerUrl)));
+
+// log new blocks
+engine.on('block', function(block){
+  console.log('================================')
+  console.log('BLOCK CHANGED:', '#'+block.number.toString('hex'), '0x'+block.hash.toString('hex'))
+  console.log('================================')
+})
+
+// network connectivity error
+engine.on('error', function(err){
+  // report connectivity errors
+  console.error(err.stack)
+})
+
+
+engine.start(); // Required by the provider engine.
+
+module.exports = {
+  networks: {
+    ropsten: {
+      network_id: 3,    // Official ropsten network id
+      provider: engine, // Use our custom provider
+      from: address,     // Use the address we derived
+      gas: 3000000
+    }
+  },
+  rpc: {
+    // Use the default host and port when not using ropsten
+    host: "localhost",
+    port: 8545
+  }
+};lakshmikanths-MacBook-Pro:truffle-poc lakshmikanth$ truffle console
+No network available. Use `truffle develop` or add network to truffle.js config.
+lakshmikanths-MacBook-Pro:truffle-poc lakshmikanth$ truffle migrate --network ropsten
+Using network 'ropsten'.
+
+Running migration: 1_initial_migration.js
+================================
+BLOCK CHANGED: #24e24e 0xc06b0e1c6b9ce162e5ae214ca838931d530988ed388c8cf51a3825267721c0da
+================================
+  Deploying Migrations...
+Error encountered, bailing. Network state unknown. Review successful transactions manually.
+insufficient funds for gas * price + value
+lakshmikanths-MacBook-Pro:truffle-poc lakshmikanth$ truffle console --network ropsten
+truffle(ropsten)> ================================
+BLOCK CHANGED: #24e250 0x6dd838243c42b2bae5cb218cbbe57a50b30350ed0b6afc4c7554abc010c350f9
+================================
+================================
+BLOCK CHANGED: #24e251 0xd2571187421b4f95baee5a06283296de7c07737b99e5295c2edab1c8a4b6ce60
+================================
+================================
+BLOCK CHANGED: #24e252 0x3f13d4d2a8c3dc28698035907b5a78bf8b5b11ace2fc9f45b38cc00769732e1a
+================================
+================================
+BLOCK CHANGED: #24e253 0x0b8bda7eb717ca4b66c8263e14838febd279682f306fed15d6473a584796e0c9
+================================
+ds
+ReferenceError: ds is not defined
+    at evalmachine.<anonymous>:1:1
+    at ContextifyScript.Script.runInContext (vm.js:59:29)
+    at Object.runInContext (vm.js:120:6)
+    at Console.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:202629:17)
+    at ReplManager.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:203345:18)
+    at bound (domain.js:301:14)
+    at REPLServer.runBound [as eval] (domain.js:314:12)
+    at REPLServer.onLine (repl.js:441:10)
+    at emitOne (events.js:116:13)
+    at REPLServer.emit (events.js:211:7)
+truffle(ropsten)> help
+ReferenceError: help is not defined
+    at evalmachine.<anonymous>:1:1
+    at ContextifyScript.Script.runInContext (vm.js:59:29)
+    at Object.runInContext (vm.js:120:6)
+    at Console.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:202629:17)
+    at ReplManager.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:203345:18)
+    at bound (domain.js:301:14)
+    at REPLServer.runBound [as eval] (domain.js:314:12)
+    at REPLServer.onLine (repl.js:441:10)
+    at emitOne (events.js:116:13)
+    at REPLServer.emit (events.js:211:7)
+truffle(ropsten)> ================================
+BLOCK CHANGED: #24e254 0x45be71241e63cce7bbdd58e58a805dd102074354140d6345331dd1e9544d84ec
+================================
+================================
+BLOCK CHANGED: #24e255 0x699f4be2b573d640994d15fe976f683b2923144a2422e1f9adc3ca612a7317d5
+================================
+================================
+BLOCK CHANGED: #24e256 0x1360b2a71757a3ba1468e7bd2eaca4c2f639a02df39f505e59aabc3dd61895d4
+================================
+truffle(ropsten)> web3.eth.accounts
+Error: Web3ProviderEngine does not support synchronous requests.
+    at ProviderError.ExtendableError (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:9401:17)
+    at new ProviderError (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:325054:24)
+    at /usr/local/lib/node_modules/truffle/build/cli.bundled.js:325137:17
+    at Web3ProviderEngine.send (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:325175:22)
+    at RequestManager.send (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:329502:32)
+    at Eth.get [as accounts] (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:41602:62)
+    at evalmachine.<anonymous>:1:10
+    at ContextifyScript.Script.runInContext (vm.js:59:29)
+    at Object.runInContext (vm.js:120:6)
+    at Console.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:202629:17)
+truffle(ropsten)> eth.accounts
+ReferenceError: eth is not defined
+    at evalmachine.<anonymous>:1:1
+    at ContextifyScript.Script.runInContext (vm.js:59:29)
+    at Object.runInContext (vm.js:120:6)
+    at Console.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:202629:17)
+    at ReplManager.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:203345:18)
+    at bound (domain.js:301:14)
+    at REPLServer.runBound [as eval] (domain.js:314:12)
+    at REPLServer.onLine (repl.js:441:10)
+    at emitOne (events.js:116:13)
+    at REPLServer.emit (events.js:211:7)
+truffle(ropsten)> accounts
+ReferenceError: accounts is not defined
+    at evalmachine.<anonymous>:1:1
+    at ContextifyScript.Script.runInContext (vm.js:59:29)
+    at Object.runInContext (vm.js:120:6)
+    at Console.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:202629:17)
+    at ReplManager.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:203345:18)
+    at bound (domain.js:301:14)
+    at REPLServer.runBound [as eval] (domain.js:314:12)
+    at REPLServer.onLine (repl.js:441:10)
+    at emitOne (events.js:116:13)
+    at REPLServer.emit (events.js:211:7)
+truffle(ropsten)> 
+Array                         Boolean                       Date                          Error                         EvalError                     Function
+Infinity                      JSON                          Math                          NaN                           Number                        Object
+RangeError                    ReferenceError                RegExp                        String                        SyntaxError                   TypeError
+URIError                      decodeURI                     decodeURIComponent            encodeURI                     encodeURIComponent            eval
+isFinite                      isNaN                         parseFloat                    parseInt                      undefined                     
+
+ArrayBuffer                   Auction                       AuctionFactory                Buffer                        ConvertLib                    DTRACE_HTTP_CLIENT_REQUEST
+DTRACE_HTTP_CLIENT_RESPONSE   DTRACE_HTTP_SERVER_REQUEST    DTRACE_HTTP_SERVER_RESPONSE   DTRACE_NET_SERVER_CONNECTION  DTRACE_NET_STREAM_END         DataView
+Float32Array                  Float64Array                  GLOBAL                        Int16Array                    Int32Array                    Int8Array
+Intl                          Map                           MetaCoin                      Migrations                    Promise                       Proxy
+Reflect                       Set                           SimpleStorage                 StateManager                  Symbol                        Uint16Array
+Uint32Array                   Uint8Array                    Uint8ClampedArray             WeakMap                       WeakSet                       WebAssembly
+XMLHttpRequest                _                             __core-js_shared__            assert                        async_hooks                   buffer
+child_process                 clearImmediate                clearInterval                 clearTimeout                  cluster                       console
+crypto                        dgram                         dns                           domain                        escape                        events
+fs                            global                        http                          http2                         https                         module
+net                           os                            path                          perf_hooks                    process                       punycode
+querystring                   readline                      repl                          require                       root                          setImmediate
+setInterval                   setTimeout                    stream                        string_decoder                tls                           tty
+unescape                      url                           util                          v8                            vm                            web3
+zlib                          
+
+__defineGetter__              __defineSetter__              __lookupGetter__              __lookupSetter__              __proto__                     constructor
+hasOwnProperty                isPrototypeOf                 propertyIsEnumerable          toLocaleString                toString                      valueOf
+
+truffle(ropsten)> web3.
+web3.__defineGetter__      web3.__defineSetter__      web3.__lookupGetter__      web3.__lookupSetter__      web3.__proto__             web3.constructor
+web3.hasOwnProperty        web3.isPrototypeOf         web3.propertyIsEnumerable  web3.toLocaleString        web3.toString              web3.valueOf
+
+web3.BigNumber             web3.createBatch           web3.fromAscii             web3.fromDecimal           web3.fromICAP              web3.fromUtf8
+web3.fromWei               web3.isAddress             web3.isChecksumAddress     web3.isConnected           web3.isIBAN                web3.padLeft
+web3.padRight              web3.reset                 web3.setProvider           web3.sha3                  web3.toAscii               web3.toBigNumber
+web3.toChecksumAddress     web3.toDecimal             web3.toHex                 web3.toUtf8                web3.toWei                 
+
+web3._extend               web3._requestManager       web3.bzz                   web3.currentProvider       web3.db                    web3.eth
+web3.net                   web3.personal              web3.providers             web3.settings              web3.shh                   web3.version
+
+truffle(ropsten)> web3.eth.
+web3.eth.__defineGetter__          web3.eth.__defineSetter__          web3.eth.__lookupGetter__          web3.eth.__lookupSetter__          web3.eth.__proto__
+web3.eth.constructor               web3.eth.hasOwnProperty            web3.eth.isPrototypeOf             web3.eth.propertyIsEnumerable      web3.eth.toLocaleString
+web3.eth.toString                  web3.eth.valueOf                   
+
+web3.eth.contract                  web3.eth.defaultAccount            web3.eth.defaultBlock              web3.eth.filter                    web3.eth.icapNamereg
+web3.eth.isSyncing                 web3.eth.namereg                   
+
+web3.eth._requestManager           web3.eth.accounts                  web3.eth.blockNumber               web3.eth.call                      web3.eth.coinbase
+web3.eth.compile                   web3.eth.estimateGas               web3.eth.gasPrice                  web3.eth.getAccounts               web3.eth.getBalance
+web3.eth.getBlock                  web3.eth.getBlockNumber            web3.eth.getBlockTransactionCount  web3.eth.getBlockUncleCount        web3.eth.getCode
+web3.eth.getCoinbase               web3.eth.getCompilers              web3.eth.getGasPrice               web3.eth.getHashrate               web3.eth.getMining
+web3.eth.getProtocolVersion        web3.eth.getStorageAt              web3.eth.getSyncing                web3.eth.getTransaction            web3.eth.getTransactionCount
+web3.eth.getTransactionFromBlock   web3.eth.getTransactionReceipt     web3.eth.getUncle                  web3.eth.getWork                   web3.eth.hashrate
+web3.eth.iban                      web3.eth.mining                    web3.eth.protocolVersion           web3.eth.sendIBANTransaction       web3.eth.sendRawTransaction
+web3.eth.sendTransaction           web3.eth.sign                      web3.eth.signTransaction           web3.eth.submitWork                web3.eth.syncing
+
+truffle(ropsten)> web3.eth.accounts
+web3.eth.accounts  
+
+truffle(ropsten)> web3.eth.accounts
+Error: Web3ProviderEngine does not support synchronous requests.
+    at ProviderError.ExtendableError (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:9401:17)
+    at new ProviderError (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:325054:24)
+    at /usr/local/lib/node_modules/truffle/build/cli.bundled.js:325137:17
+    at Web3ProviderEngine.send (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:325175:22)
+    at RequestManager.send (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:329502:32)
+    at Eth.get [as accounts] (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:41602:62)
+    at evalmachine.<anonymous>:1:10
+    at ContextifyScript.Script.runInContext (vm.js:59:29)
+    at Object.runInContext (vm.js:120:6)
+    at Console.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:202629:17)
+truffle(ropsten)> var accounts = web3.eth.accounts
+Error: Web3ProviderEngine does not support synchronous requests.
+    at ProviderError.ExtendableError (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:9401:17)
+    at new ProviderError (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:325054:24)
+    at /usr/local/lib/node_modules/truffle/build/cli.bundled.js:325137:17
+    at Web3ProviderEngine.send (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:325175:22)
+    at RequestManager.send (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:329502:32)
+    at Eth.get [as accounts] (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:41602:62)
+    at evalmachine.<anonymous>:1:25
+    at ContextifyScript.Script.runInContext (vm.js:59:29)
+    at Object.runInContext (vm.js:120:6)
+    at Console.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:202629:17)
+truffle(ropsten)> var accounts = await web3.eth.accounts
+SyntaxError: Unexpected identifier
+    at createScript (vm.js:80:10)
+    at Object.runInContext (vm.js:119:10)
+    at Console.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:202629:17)
+    at ReplManager.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:203345:18)
+    at bound (domain.js:301:14)
+    at REPLServer.runBound [as eval] (domain.js:314:12)
+    at REPLServer.onLine (repl.js:441:10)
+    at emitOne (events.js:116:13)
+    at REPLServer.emit (events.js:211:7)
+    at REPLServer.Interface._onLine (readline.js:282:10)
+truffle(ropsten)> let accounts = await metaCoinAPI.web3.eth.getAccounts()
+SyntaxError: Unexpected identifier
+    at createScript (vm.js:80:10)
+    at Object.runInContext (vm.js:119:10)
+    at Console.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:202629:17)
+    at ReplManager.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:203345:18)
+    at bound (domain.js:301:14)
+    at REPLServer.runBound [as eval] (domain.js:314:12)
+    at REPLServer.onLine (repl.js:441:10)
+    at emitOne (events.js:116:13)
+    at REPLServer.emit (events.js:211:7)
+    at REPLServer.Interface._onLine (readline.js:282:10)
+truffle(ropsten)> var accts = MetaCoin.
+MetaCoin.__defineGetter__      MetaCoin.__defineSetter__      MetaCoin.__lookupGetter__      MetaCoin.__lookupSetter__      MetaCoin.__proto__
+MetaCoin.constructor           MetaCoin.hasOwnProperty        MetaCoin.isPrototypeOf         MetaCoin.propertyIsEnumerable  MetaCoin.toLocaleString
+MetaCoin.toString              MetaCoin.valueOf               
+
+MetaCoin.apply                 MetaCoin.arguments             MetaCoin.bind                  MetaCoin.call                  MetaCoin.caller
+MetaCoin.length                MetaCoin.name                  
+
+MetaCoin._json                 MetaCoin._properties           MetaCoin._property_values      MetaCoin._static_methods       MetaCoin.abi
+MetaCoin.addProp               MetaCoin.address               MetaCoin.ast                   MetaCoin.at                    MetaCoin.binary
+MetaCoin.bytecode              MetaCoin.class_defaults        MetaCoin.clone                 MetaCoin.compiler              MetaCoin.contractName
+MetaCoin.contract_name         MetaCoin.currentProvider       MetaCoin.defaults              MetaCoin.deployed              MetaCoin.deployedBinary
+MetaCoin.deployedBytecode      MetaCoin.deployedSourceMap     MetaCoin.detectNetwork         MetaCoin.events                MetaCoin.hasNetwork
+MetaCoin.isDeployed            MetaCoin.link                  MetaCoin.links                 MetaCoin.network               MetaCoin.network_id
+MetaCoin.networks              MetaCoin.new                   MetaCoin.prototype             MetaCoin.resetAddress          MetaCoin.schemaVersion
+MetaCoin.schema_version        MetaCoin.setNetwork            MetaCoin.setProvider           MetaCoin.source                MetaCoin.sourceMap
+MetaCoin.sourcePath            MetaCoin.toJSON                MetaCoin.unlinked_binary       MetaCoin.updatedAt             MetaCoin.updated_at
+MetaCoin.web3                  
+
+truffle(ropsten)> var accts = MetaCoin.a
+MetaCoin.apply      MetaCoin.arguments  
+
+MetaCoin.abi        MetaCoin.addProp    MetaCoin.address    MetaCoin.ast        MetaCoin.at         
+
+truffle(ropsten)> var accts = MetaCoin.abi
+undefined
+truffle(ropsten)> accts
+[ { constant: false,
+    inputs: [ [Object] ],
+    name: 'getBalanceInEth',
+    outputs: [ [Object] ],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'function' },
+  { constant: false,
+    inputs: [ [Object], [Object] ],
+    name: 'sendCoin',
+    outputs: [ [Object] ],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'function' },
+  { constant: false,
+    inputs: [ [Object] ],
+    name: 'getBalance',
+    outputs: [ [Object] ],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'function' },
+  { inputs: [],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'constructor' },
+  { anonymous: false,
+    inputs: [ [Object], [Object], [Object] ],
+    name: 'Transfer',
+    type: 'event' } ]
+truffle(ropsten)> var accounts = await web3.eth.accounts
+SyntaxError: Unexpected identifier
+    at createScript (vm.js:80:10)
+    at Object.runInContext (vm.js:119:10)
+    at Console.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:202629:17)
+    at ReplManager.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:203345:18)
+    at bound (domain.js:301:14)
+    at REPLServer.runBound [as eval] (domain.js:314:12)
+    at REPLServer.onLine (repl.js:441:10)
+    at emitOne (events.js:116:13)
+    at REPLServer.emit (events.js:211:7)
+    at REPLServer.Interface._onLine (readline.js:282:10)
+truffle(ropsten)> let accts = wait web3.eth.accounts
+SyntaxError: Unexpected identifier
+    at createScript (vm.js:80:10)
+    at Object.runInContext (vm.js:119:10)
+    at Console.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:202629:17)
+    at ReplManager.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:203345:18)
+    at bound (domain.js:301:14)
+    at REPLServer.runBound [as eval] (domain.js:314:12)
+    at REPLServer.onLine (repl.js:441:10)
+    at emitOne (events.js:116:13)
+    at REPLServer.emit (events.js:211:7)
+    at REPLServer.Interface._onLine (readline.js:282:10)
+truffle(ropsten)> web3.
+web3.__defineGetter__      web3.__defineSetter__      web3.__lookupGetter__      web3.__lookupSetter__      web3.__proto__             web3.constructor
+web3.hasOwnProperty        web3.isPrototypeOf         web3.propertyIsEnumerable  web3.toLocaleString        web3.toString              web3.valueOf
+
+web3.BigNumber             web3.createBatch           web3.fromAscii             web3.fromDecimal           web3.fromICAP              web3.fromUtf8
+web3.fromWei               web3.isAddress             web3.isChecksumAddress     web3.isConnected           web3.isIBAN                web3.padLeft
+web3.padRight              web3.reset                 web3.setProvider           web3.sha3                  web3.toAscii               web3.toBigNumber
+web3.toChecksumAddress     web3.toDecimal             web3.toHex                 web3.toUtf8                web3.toWei                 
+
+web3._extend               web3._requestManager       web3.bzz                   web3.currentProvider       web3.db                    web3.eth
+web3.net                   web3.personal              web3.providers             web3.settings              web3.shh                   web3.version
+
+truffle(ropsten)> web3.eth.getAccounts(function(err,resp){accounts = resp;});
+undefined
+truffle(ropsten)> accounts
+[ '0xf72c51afb519e63d50d6fd7e31581234b8701e6b' ]
+truffle(ropsten)> web3.eth.accounts(function(err,resp){accounts_ropsten = resp;});
+Error: Web3ProviderEngine does not support synchronous requests.
+    at ProviderError.ExtendableError (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:9401:17)
+    at new ProviderError (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:325054:24)
+    at /usr/local/lib/node_modules/truffle/build/cli.bundled.js:325137:17
+    at Web3ProviderEngine.send (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:325175:22)
+    at RequestManager.send (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:329502:32)
+    at Eth.get [as accounts] (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:41602:62)
+    at evalmachine.<anonymous>:1:10
+    at ContextifyScript.Script.runInContext (vm.js:59:29)
+    at Object.runInContext (vm.js:120:6)
+    at Console.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:202629:17)
+truffle(ropsten)> web3.eth.
+web3.eth.__defineGetter__          web3.eth.__defineSetter__          web3.eth.__lookupGetter__          web3.eth.__lookupSetter__          web3.eth.__proto__
+web3.eth.constructor               web3.eth.hasOwnProperty            web3.eth.isPrototypeOf             web3.eth.propertyIsEnumerable      web3.eth.toLocaleString
+web3.eth.toString                  web3.eth.valueOf                   
+
+web3.eth.contract                  web3.eth.defaultAccount            web3.eth.defaultBlock              web3.eth.filter                    web3.eth.icapNamereg
+web3.eth.isSyncing                 web3.eth.namereg                   
+
+web3.eth._requestManager           web3.eth.accounts                  web3.eth.blockNumber               web3.eth.call                      web3.eth.coinbase
+web3.eth.compile                   web3.eth.estimateGas               web3.eth.gasPrice                  web3.eth.getAccounts               web3.eth.getBalance
+web3.eth.getBlock                  web3.eth.getBlockNumber            web3.eth.getBlockTransactionCount  web3.eth.getBlockUncleCount        web3.eth.getCode
+web3.eth.getCoinbase               web3.eth.getCompilers              web3.eth.getGasPrice               web3.eth.getHashrate               web3.eth.getMining
+web3.eth.getProtocolVersion        web3.eth.getStorageAt              web3.eth.getSyncing                web3.eth.getTransaction            web3.eth.getTransactionCount
+web3.eth.getTransactionFromBlock   web3.eth.getTransactionReceipt     web3.eth.getUncle                  web3.eth.getWork                   web3.eth.hashrate
+web3.eth.iban                      web3.eth.mining                    web3.eth.protocolVersion           web3.eth.sendIBANTransaction       web3.eth.sendRawTransaction
+web3.eth.sendTransaction           web3.eth.sign                      web3.eth.signTransaction           web3.eth.submitWork                web3.eth.syncing
+
+truffle(ropsten)> web3.eth.getBalance(accounts[0])(function(err,resp){console.log(resp}));
+SyntaxError: missing ) after argument list
+    at createScript (vm.js:80:10)
+    at Object.runInContext (vm.js:119:10)
+    at Console.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:202629:17)
+    at ReplManager.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:203345:18)
+    at bound (domain.js:301:14)
+    at REPLServer.runBound [as eval] (domain.js:314:12)
+    at REPLServer.onLine (repl.js:441:10)
+    at emitOne (events.js:116:13)
+    at REPLServer.emit (events.js:211:7)
+    at REPLServer.Interface._onLine (readline.js:282:10)
+truffle(ropsten)> web3.eth.getBalance(accounts[0])(function(err,resp){console.log(resp)}));
+SyntaxError: Unexpected token )
+    at createScript (vm.js:80:10)
+    at Object.runInContext (vm.js:119:10)
+    at Console.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:202629:17)
+    at ReplManager.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:203345:18)
+    at bound (domain.js:301:14)
+    at REPLServer.runBound [as eval] (domain.js:314:12)
+    at REPLServer.onLine (repl.js:441:10)
+    at emitOne (events.js:116:13)
+    at REPLServer.emit (events.js:211:7)
+    at REPLServer.Interface._onLine (readline.js:282:10)
+truffle(ropsten)> web3.eth.getBalance(accounts[0])(function(err,resp){console.log(resp)});
+Error: Web3ProviderEngine does not support synchronous requests.
+    at ProviderError.ExtendableError (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:9401:17)
+    at new ProviderError (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:325054:24)
+    at /usr/local/lib/node_modules/truffle/build/cli.bundled.js:325137:17
+    at Web3ProviderEngine.send (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:325175:22)
+    at RequestManager.send (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:329502:32)
+    at Eth.send [as getBalance] (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:37994:58)
+    at evalmachine.<anonymous>:1:10
+    at ContextifyScript.Script.runInContext (vm.js:59:29)
+    at Object.runInContext (vm.js:120:6)
+    at Console.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:202629:17)
+truffle(ropsten)> web3
+web3  
+
+truffle(ropsten)> web3.
+web3.__defineGetter__      web3.__defineSetter__      web3.__lookupGetter__      web3.__lookupSetter__      web3.__proto__             web3.constructor
+web3.hasOwnProperty        web3.isPrototypeOf         web3.propertyIsEnumerable  web3.toLocaleString        web3.toString              web3.valueOf
+
+web3.BigNumber             web3.createBatch           web3.fromAscii             web3.fromDecimal           web3.fromICAP              web3.fromUtf8
+web3.fromWei               web3.isAddress             web3.isChecksumAddress     web3.isConnected           web3.isIBAN                web3.padLeft
+web3.padRight              web3.reset                 web3.setProvider           web3.sha3                  web3.toAscii               web3.toBigNumber
+web3.toChecksumAddress     web3.toDecimal             web3.toHex                 web3.toUtf8                web3.toWei                 
+
+web3._extend               web3._requestManager       web3.bzz                   web3.currentProvider       web3.db                    web3.eth
+web3.net                   web3.personal              web3.providers             web3.settings              web3.shh                   web3.version
+
+truffle(ropsten)> web3.v
+undefined
+truffle(ropsten)> web3.version
+{ api: '0.20.2',
+  node: [Getter],
+  getNode: { [Function: get] request: [Function: bound ] },
+  network: [Getter],
+  getNetwork: { [Function: get] request: [Function: bound ] },
+  ethereum: [Getter],
+  getEthereum: { [Function: get] request: [Function: bound ] },
+  whisper: [Getter],
+  getWhisper: { [Function: get] request: [Function: bound ] } }
+truffle(ropsten)> web3.currentProvider
+Web3ProviderEngine {
+  domain: null,
+  _events: 
+   { block: [ [Function], [Function], [Function] ],
+     error: [Function] },
+  _eventsCount: 2,
+  _maxListeners: 30,
+  _blockTracker: 
+   RpcBlockTracker {
+     domain: null,
+     _events: 
+      { block: [Array],
+        sync: [Function: bound emit],
+        latest: [Function: bound emit] },
+     _eventsCount: 3,
+     _maxListeners: undefined,
+     _query: EthQuery { currentProvider: [Object] },
+     _pollingInterval: 4000,
+     _syncingTimeout: 60000,
+     _trackingBlock: 
+      { difficulty: '0xe58b386e',
+        extraData: '0x4554482e45544846414e532e4f52472d3132383643423442',
+        gasLimit: '0x47e7ca',
+        gasUsed: '0x878b2',
+        hash: '0x1360b2a71757a3ba1468e7bd2eaca4c2f639a02df39f505e59aabc3dd61895d4',
+        logsBloom: '0x00000000000000000000002000000000000000000000000000000060000000000000000000000000800000000008400000008000000208000000000800000000000000000000000000000008000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000004000000000000000000000000000000000080000000200081000000000000000000080080000000000000000002000200000000000000000000000000000800000000000000000002000000000100000000000000000000000000010000000000000000040000000000',
+        miner: '0xbbf5029fd710d227630c8b7d338051b8e76d50b3',
+        mixHash: '0x65a8c1b19e1e1e6ea5b989a4798c530f283c38987f1b523816ce434a7f2a2d81',
+        nonce: '0x2d3ba6951312cfe5',
+        number: '0x24e256',
+        parentHash: '0x699f4be2b573d640994d15fe976f683b2923144a2422e1f9adc3ca612a7317d5',
+        receiptsRoot: '0x0dcf5bffc5b829c2f4b5ea520612e0ae613a1537333953d7890178b500a7bfe2',
+        sha3Uncles: '0x50d84556cfbeea903159f05f4c9f9f9543177f4f256511bccec8c037a41853db',
+        size: '0xa3d',
+        stateRoot: '0x4d12daa2346495dd5c8470ed3915fddeb12b4da902ab71f3e4a8966388e79a48',
+        timestamp: '0x5a525ba3',
+        totalDifficulty: '0x1a3107a45f78f6',
+        transactions: [Array],
+        transactionsRoot: '0xc8585f46827450b24af65c09c78c1fd6d0a4320e132fe5ebde558bbb06faa16f',
+        uncles: [Array] },
+     _trackingBlockTimestamp: 1515346867658,
+     _currentBlock: 
+      { difficulty: '0xe58b386e',
+        extraData: '0x4554482e45544846414e532e4f52472d3132383643423442',
+        gasLimit: '0x47e7ca',
+        gasUsed: '0x183c14',
+        hash: '0x699f4be2b573d640994d15fe976f683b2923144a2422e1f9adc3ca612a7317d5',
+        logsBloom: '0x00000000000000000000002000000000040000000000000000000060000000000080000000000000804000000008400000008000000208000000000800000000000000000000000000000008002000000000000000002000000000000000000000000000000000000000000400000000000000000000000000000010000000000000000000000000000000000000000000000000040005000000000000200000000000000000000280000000200081000000000000000008080000000000000000000002000000010000000000010000000000000000000001000000000000000000000100000000000000010000000000010000000000000000000000000000',
+        miner: '0xbbf5029fd710d227630c8b7d338051b8e76d50b3',
+        mixHash: '0x574cb56b338c3f351238f95883162c1aa490f7a5f52b8575f55f218799ed4e2d',
+        nonce: '0x4468c19a31ef3250',
+        number: '0x24e255',
+        parentHash: '0x45be71241e63cce7bbdd58e58a805dd102074354140d6345331dd1e9544d84ec',
+        receiptsRoot: '0x68ec8fd589e7fc8dcb9cab6f956a2037871dce3cf83b94752a30bd28af74b5a9',
+        sha3Uncles: '0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347',
+        size: '0x19b0',
+        stateRoot: '0x6bd402d3c181b9b824fc580e24bc2d413395cb80a9a46781176561d3e0ece54b',
+        timestamp: '0x5a525b98',
+        totalDifficulty: '0x1a3106bed44088',
+        transactions: [Array],
+        transactionsRoot: '0x1abf3d3f23ca63f57e9d374ffffd12b7a62b56d53fb0b247cd549481c7357a48',
+        uncles: [] },
+     _isRunning: true,
+     emit: [Function: bound ],
+     _performSync: [Function: bound _performSync] },
+  _ready: 
+   Stoplight {
+     domain: null,
+     _events: {},
+     _eventsCount: 0,
+     _maxListeners: undefined,
+     isLocked: false },
+  currentBlock: 
+   { number: <Buffer 24 e2 56>,
+     hash: <Buffer 13 60 b2 a7 17 57 a3 ba 14 68 e7 bd 2e ac a4 c2 f6 39 a0 2d f3 9f 50 5e 59 aa bc 3d d6 18 95 d4>,
+     parentHash: <Buffer 69 9f 4b e2 b5 73 d6 40 99 4d 15 fe 97 6f 68 3b 29 23 14 4a 24 22 e1 f9 ad c3 ca 61 2a 73 17 d5>,
+     nonce: <Buffer 2d 3b a6 95 13 12 cf e5>,
+     sha3Uncles: <Buffer 50 d8 45 56 cf be ea 90 31 59 f0 5f 4c 9f 9f 95 43 17 7f 4f 25 65 11 bc ce c8 c0 37 a4 18 53 db>,
+     logsBloom: <Buffer 00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 60 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00 00 00 08 40 00 00 00 ... >,
+     transactionsRoot: <Buffer c8 58 5f 46 82 74 50 b2 4a f6 5c 09 c7 8c 1f d6 d0 a4 32 0e 13 2f e5 eb de 55 8b bb 06 fa a1 6f>,
+     stateRoot: <Buffer 4d 12 da a2 34 64 95 dd 5c 84 70 ed 39 15 fd de b1 2b 4d a9 02 ab 71 f3 e4 a8 96 63 88 e7 9a 48>,
+     receiptsRoot: <Buffer 0d cf 5b ff c5 b8 29 c2 f4 b5 ea 52 06 12 e0 ae 61 3a 15 37 33 39 53 d7 89 01 78 b5 00 a7 bf e2>,
+     miner: <Buffer bb f5 02 9f d7 10 d2 27 63 0c 8b 7d 33 80 51 b8 e7 6d 50 b3>,
+     difficulty: <Buffer e5 8b 38 6e>,
+     totalDifficulty: <Buffer 1a 31 07 a4 5f 78 f6>,
+     size: <Buffer 0a 3d>,
+     extraData: <Buffer 45 54 48 2e 45 54 48 46 41 4e 53 2e 4f 52 47 2d 31 32 38 36 43 42 34 42>,
+     gasLimit: <Buffer 47 e7 ca>,
+     gasUsed: <Buffer 08 78 b2>,
+     timestamp: <Buffer 5a 52 5b a3>,
+     transactions: 
+      [ [Object],
+        [Object],
+        [Object],
+        [Object],
+        [Object],
+        [Object],
+        [Object] ] },
+  _providers: 
+   [ WalletSubprovider {
+       nonceLock: [Object],
+       getAccounts: [Function],
+       approveTransaction: [Function],
+       approveMessage: [Function],
+       approvePersonalMessage: [Function],
+       approveTypedMessage: [Function],
+       signTransaction: [Function],
+       signMessage: [Function],
+       signPersonalMessage: [Function],
+       signTypedMessage: [Function],
+       engine: [Circular],
+       currentBlock: [Object] },
+     Web3Subprovider {
+       provider: [Object],
+       engine: [Circular],
+       currentBlock: [Object] } ],
+  send: [Function],
+  sendAsync: [Function],
+  _alreadyWrapped: true }
+truffle(ropsten)> web3.
+web3.__defineGetter__      web3.__defineSetter__      web3.__lookupGetter__      web3.__lookupSetter__      web3.__proto__             web3.constructor
+web3.hasOwnProperty        web3.isPrototypeOf         web3.propertyIsEnumerable  web3.toLocaleString        web3.toString              web3.valueOf
+
+web3.BigNumber             web3.createBatch           web3.fromAscii             web3.fromDecimal           web3.fromICAP              web3.fromUtf8
+web3.fromWei               web3.isAddress             web3.isChecksumAddress     web3.isConnected           web3.isIBAN                web3.padLeft
+web3.padRight              web3.reset                 web3.setProvider           web3.sha3                  web3.toAscii               web3.toBigNumber
+web3.toChecksumAddress     web3.toDecimal             web3.toHex                 web3.toUtf8                web3.toWei                 
+
+web3._extend               web3._requestManager       web3.bzz                   web3.currentProvider       web3.db                    web3.eth
+web3.net                   web3.personal              web3.providers             web3.settings              web3.shh                   web3.version
+
+truffle(ropsten)> web3.eth.getAccounts.c
+web3.eth.getAccounts.constructor  
+
+web3.eth.getAccounts.call         web3.eth.getAccounts.caller       
+
+truffle(ropsten)> web3.eth.getAccounts.call
+web3.eth.getAccounts.call    web3.eth.getAccounts.caller  
+
+truffle(ropsten)> web3.eth.getAccounts.call
+web3.eth.getAccounts.call    web3.eth.getAccounts.caller  
+
+truffle(ropsten)> web3.eth.getAccounts.call
+[Function: call]
+truffle(ropsten)> web3.eth.getAccounts.call(accounts[0])
+undefined
+truffle(ropsten)> TypeError: callback is not a function
+    at /usr/local/lib/node_modules/truffle/build/cli.bundled.js:41614:13
+    at /usr/local/lib/node_modules/truffle/build/cli.bundled.js:329526:20
+    at /usr/local/lib/node_modules/truffle/build/cli.bundled.js:325200:9
+    at /Users/lakshmikanth/Documents/truffle-poc/node_modules/web3-provider-engine/index.js:147:9
+    at /Users/lakshmikanth/Documents/truffle-poc/node_modules/async/internal/once.js:12:16
+    at replenish (/Users/lakshmikanth/Documents/truffle-poc/node_modules/async/internal/eachOfLimit.js:59:25)
+    at iterateeCallback (/Users/lakshmikanth/Documents/truffle-poc/node_modules/async/internal/eachOfLimit.js:49:17)
+    at /Users/lakshmikanth/Documents/truffle-poc/node_modules/async/internal/onlyOnce.js:12:16
+    at resultObj.id (/Users/lakshmikanth/Documents/truffle-poc/node_modules/web3-provider-engine/index.js:129:9)
+    at /Users/lakshmikanth/Documents/truffle-poc/node_modules/async/internal/withoutIndex.js:9:16
+truffle(ropsten)> web3.eth.getAccounts.call(accounts[0])(function(err,resp){console.log(resp);});
+TypeError: web3.eth.getAccounts.call(...) is not a function
+    at evalmachine.<anonymous>:1:39
+    at ContextifyScript.Script.runInContext (vm.js:59:29)
+    at Object.runInContext (vm.js:120:6)
+    at Console.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:202629:17)
+    at ReplManager.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:203345:18)
+    at bound (domain.js:301:14)
+    at REPLServer.runBound [as eval] (domain.js:314:12)
+    at REPLServer.onLine (repl.js:441:10)
+    at emitOne (events.js:116:13)
+    at REPLServer.emit (events.js:211:7)
+truffle(ropsten)> TypeError: callback is not a function
+    at /usr/local/lib/node_modules/truffle/build/cli.bundled.js:41614:13
+    at /usr/local/lib/node_modules/truffle/build/cli.bundled.js:329526:20
+    at /usr/local/lib/node_modules/truffle/build/cli.bundled.js:325200:9
+    at /Users/lakshmikanth/Documents/truffle-poc/node_modules/web3-provider-engine/index.js:147:9
+    at /Users/lakshmikanth/Documents/truffle-poc/node_modules/async/internal/once.js:12:16
+    at replenish (/Users/lakshmikanth/Documents/truffle-poc/node_modules/async/internal/eachOfLimit.js:59:25)
+    at iterateeCallback (/Users/lakshmikanth/Documents/truffle-poc/node_modules/async/internal/eachOfLimit.js:49:17)
+    at /Users/lakshmikanth/Documents/truffle-poc/node_modules/async/internal/onlyOnce.js:12:16
+    at resultObj.id (/Users/lakshmikanth/Documents/truffle-poc/node_modules/web3-provider-engine/index.js:129:9)
+    at /Users/lakshmikanth/Documents/truffle-poc/node_modules/async/internal/withoutIndex.js:9:16
+truffle(ropsten)> web3.eth.getB.call(accounts[0])(function(err,resp){console.log(resp);});
+web3.eth.getBalance                web3.eth.getBlock                  web3.eth.getBlockNumber            web3.eth.getBlockTransactionCount  web3.eth.getBlockUncleCount
+
+truffle(ropsten)> web3.eth.getBalance.call(accounts[0])(function(err,resp){console.log(resp);});
+TypeError: web3.eth.getBalance.call is not a function
+    at evalmachine.<anonymous>:1:21
+    at ContextifyScript.Script.runInContext (vm.js:59:29)
+    at Object.runInContext (vm.js:120:6)
+    at Console.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:202629:17)
+    at ReplManager.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:203345:18)
+    at bound (domain.js:301:14)
+    at REPLServer.runBound [as eval] (domain.js:314:12)
+    at REPLServer.onLine (repl.js:441:10)
+    at emitOne (events.js:116:13)
+    at REPLServer.emit (events.js:211:7)
+truffle(ropsten)> web3.eth.getBalance
+web3.eth.getBalance  
+
+truffle(ropsten)> web3.eth.getBalance.
+web3.eth.getBalance.__defineGetter__      web3.eth.getBalance.__defineSetter__      web3.eth.getBalance.__lookupGetter__      web3.eth.getBalance.__lookupSetter__
+web3.eth.getBalance.__proto__             web3.eth.getBalance.constructor           web3.eth.getBalance.hasOwnProperty        web3.eth.getBalance.isPrototypeOf
+web3.eth.getBalance.propertyIsEnumerable  web3.eth.getBalance.toLocaleString        web3.eth.getBalance.toString              web3.eth.getBalance.valueOf
+
+web3.eth.getBalance.apply                 web3.eth.getBalance.arguments             web3.eth.getBalance.bind                  web3.eth.getBalance.call
+web3.eth.getBalance.caller                web3.eth.getBalance.length                web3.eth.getBalance.name                  
+
+web3.eth.getBalance.prototype             web3.eth.getBalance.request               
+
+truffle(ropsten)> web3.eth.getBalance.c
+web3.eth.getBalance.constructor  
+
+web3.eth.getBalance.call         web3.eth.getBalance.caller       
+
+truffle(ropsten)> web3.eth.getBalance.call
+'eth_getBalance'
+truffle(ropsten)> web3.eth.getBalance.call(accounts[0]);
+TypeError: web3.eth.getBalance.call is not a function
+    at evalmachine.<anonymous>:1:21
+    at ContextifyScript.Script.runInContext (vm.js:59:29)
+    at Object.runInContext (vm.js:120:6)
+    at Console.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:202629:17)
+    at ReplManager.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:203345:18)
+    at bound (domain.js:301:14)
+    at REPLServer.runBound [as eval] (domain.js:314:12)
+    at REPLServer.onLine (repl.js:441:10)
+    at emitOne (events.js:116:13)
+    at REPLServer.emit (events.js:211:7)
+truffle(ropsten)> web3.eth.getBalance.call
+web3.eth.getBalance.call    web3.eth.getBalance.caller  
+
+truffle(ropsten)> web3.eth.getBalance.call.
+web3.eth.getBalance.call.__defineGetter__      web3.eth.getBalance.call.__defineSetter__      web3.eth.getBalance.call.__lookupGetter__
+web3.eth.getBalance.call.__lookupSetter__      web3.eth.getBalance.call.__proto__             web3.eth.getBalance.call.constructor
+web3.eth.getBalance.call.hasOwnProperty        web3.eth.getBalance.call.isPrototypeOf         web3.eth.getBalance.call.propertyIsEnumerable
+web3.eth.getBalance.call.toLocaleString        web3.eth.getBalance.call.toString              web3.eth.getBalance.call.valueOf
+
+web3.eth.getBalance.call.anchor                web3.eth.getBalance.call.big                   web3.eth.getBalance.call.blink
+web3.eth.getBalance.call.bold                  web3.eth.getBalance.call.charAt                web3.eth.getBalance.call.charCodeAt
+web3.eth.getBalance.call.codePointAt           web3.eth.getBalance.call.concat                web3.eth.getBalance.call.endsWith
+web3.eth.getBalance.call.fixed                 web3.eth.getBalance.call.fontcolor             web3.eth.getBalance.call.fontsize
+web3.eth.getBalance.call.includes              web3.eth.getBalance.call.indexOf               web3.eth.getBalance.call.italics
+web3.eth.getBalance.call.lastIndexOf           web3.eth.getBalance.call.length                web3.eth.getBalance.call.link
+web3.eth.getBalance.call.localeCompare         web3.eth.getBalance.call.match                 web3.eth.getBalance.call.normalize
+web3.eth.getBalance.call.padEnd                web3.eth.getBalance.call.padStart              web3.eth.getBalance.call.repeat
+web3.eth.getBalance.call.replace               web3.eth.getBalance.call.search                web3.eth.getBalance.call.slice
+web3.eth.getBalance.call.small                 web3.eth.getBalance.call.split                 web3.eth.getBalance.call.startsWith
+web3.eth.getBalance.call.strike                web3.eth.getBalance.call.sub                   web3.eth.getBalance.call.substr
+web3.eth.getBalance.call.substring             web3.eth.getBalance.call.sup                   web3.eth.getBalance.call.toLocaleLowerCase
+web3.eth.getBalance.call.toLocaleUpperCase     web3.eth.getBalance.call.toLowerCase           web3.eth.getBalance.call.toUpperCase
+web3.eth.getBalance.call.trim                  web3.eth.getBalance.call.trimLeft              web3.eth.getBalance.call.trimRight
+
+truffle(ropsten)> web3.eth.getBalance.call(accounts[0])
+TypeError: web3.eth.getBalance.call is not a function
+    at evalmachine.<anonymous>:1:21
+    at ContextifyScript.Script.runInContext (vm.js:59:29)
+    at Object.runInContext (vm.js:120:6)
+    at Console.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:202629:17)
+    at ReplManager.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:203345:18)
+    at bound (domain.js:301:14)
+    at REPLServer.runBound [as eval] (domain.js:314:12)
+    at REPLServer.onLine (repl.js:441:10)
+    at emitOne (events.js:116:13)
+    at REPLServer.emit (events.js:211:7)
+truffle(ropsten)> web3.eth.getBalance(accounts[0],function(err,resp){console.log(resp);});
+undefined
+truffle(ropsten)> BigNumber { s: 1, e: 0, c: [ 0 ] }
+
+undefined
+truffle(ropsten)> web3.eth.getBalance(accounts[0],function(err,resp){console.log(web3.toWei(resp,'ether');});
+SyntaxError: missing ) after argument list
+    at createScript (vm.js:80:10)
+    at Object.runInContext (vm.js:119:10)
+    at Console.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:202629:17)
+    at ReplManager.interpret (/usr/local/lib/node_modules/truffle/build/cli.bundled.js:203345:18)
+    at bound (domain.js:301:14)
+    at REPLServer.runBound [as eval] (domain.js:314:12)
+    at REPLServer.onLine (repl.js:441:10)
+    at emitOne (events.js:116:13)
+    at REPLServer.emit (events.js:211:7)
+    at REPLServer.Interface._onLine (readline.js:282:10)
+truffle(ropsten)> web3.eth.getBalance(accounts[0],function(err,resp){console.log(web3.toWei(resp,'ether'));});
+undefined
+truffle(ropsten)> BigNumber { s: 1, e: 0, c: [ 0 ] }
+
+undefined
+truffle(ropsten)> accounts
+[ '0xf72c51afb519e63d50d6fd7e31581234b8701e6b' ]
+truffle(ropsten)> web3.eth.getBalance(accounts[0],function(err,resp){console.log(web3.toWei(resp,'ether'));});
+undefined
+truffle(ropsten)> BigNumber { s: 1, e: 36, c: [ 300000000 ] }
+truffle(ropsten)> web3.eth.getBalance(accounts[0],function(err,resp){console.log(web3.toWei(resp,'ether')).toString();});
+undefined
+truffle(ropsten)> BigNumber { s: 1, e: 36, c: [ 300000000 ] }
+TypeError: Cannot read property 'toString' of undefined
+    at Object.callback (evalmachine.<anonymous>:1:27)
+    at /usr/local/lib/node_modules/truffle/build/cli.bundled.js:37991:25
+    at /usr/local/lib/node_modules/truffle/build/cli.bundled.js:329533:9
+    at /usr/local/lib/node_modules/truffle/build/cli.bundled.js:325200:9
+    at /Users/lakshmikanth/Documents/truffle-poc/node_modules/web3-provider-engine/index.js:149:9
+    at /Users/lakshmikanth/Documents/truffle-poc/node_modules/async/internal/once.js:12:16
+    at replenish (/Users/lakshmikanth/Documents/truffle-poc/node_modules/async/internal/eachOfLimit.js:59:25)
+    at iterateeCallback (/Users/lakshmikanth/Documents/truffle-poc/node_modules/async/internal/eachOfLimit.js:49:17)
+    at /Users/lakshmikanth/Documents/truffle-poc/node_modules/async/internal/onlyOnce.js:12:16
+    at resultObj.id (/Users/lakshmikanth/Documents/truffle-poc/node_modules/web3-provider-engine/index.js:129:9)
+truffle(ropsten)> web3.eth.getBalance(accounts[0],function(err,resp){console.log(web3.toWei(resp,'ether'));});
+undefined
+truffle(ropsten)> BigNumber { s: 1, e: 36, c: [ 300000000 ] }
+truffle(ropsten)> accounts[1]
+undefined
+truffle(ropsten)> 
+undefined
+truffle(ropsten)> acc
+accounts  accts     
+
+truffle(ropsten)> acc
+accounts  accts     
+
+truffle(ropsten)> acc
+accounts  accts     
+
+truffle(ropsten)> accts
+[ { constant: false,
+    inputs: [ [Object] ],
+    name: 'getBalanceInEth',
+    outputs: [ [Object] ],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'function' },
+  { constant: false,
+    inputs: [ [Object], [Object] ],
+    name: 'sendCoin',
+    outputs: [ [Object] ],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'function' },
+  { constant: false,
+    inputs: [ [Object] ],
+    name: 'getBalance',
+    outputs: [ [Object] ],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'function' },
+  { inputs: [],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'constructor' },
+  { anonymous: false,
+    inputs: [ [Object], [Object], [Object] ],
+    name: 'Transfer',
+    type: 'event' } ]
+truffle(ropsten)> accounts
+[ '0xf72c51afb519e63d50d6fd7e31581234b8701e6b' ]
+truffle(ropsten)> 
